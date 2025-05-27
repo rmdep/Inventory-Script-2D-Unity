@@ -1,0 +1,51 @@
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+public class Penyimpanan : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+{
+    [HideInInspector] public Transform parentAfterDrag;
+    private Canvas canvas;
+    private Image image;
+
+    public float healAmount = 20f; // Bisa atur dari inspector
+
+    private void Awake()
+    {
+        canvas = GetComponentInParent<Canvas>();
+        image = GetComponent<Image>();
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        parentAfterDrag = transform.parent;
+        transform.SetParent(canvas.transform, true);
+        transform.SetAsLastSibling();
+        image.raycastTarget = false;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        transform.position = Input.mousePosition;
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        transform.SetParent(parentAfterDrag, true);
+        transform.localPosition = Vector3.zero;
+        image.raycastTarget = true;
+    }
+
+    // 👇 Fungsi ini akan dipanggil dari UI Button
+    public void UseItem()
+    {
+        PlayerTemperature pt = GameObject.FindWithTag("Player")?.GetComponent<PlayerTemperature>();
+        if (pt != null)
+        {
+            pt.Heal(healAmount);
+            Debug.Log("Item dari penyimpanan digunakan! + " + healAmount + " HP");
+        }
+
+        Destroy(gameObject); // Item hilang setelah digunakan (opsional)
+    }
+}
